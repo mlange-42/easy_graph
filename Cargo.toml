@@ -1,0 +1,16 @@
+[package]
+name = "easy_graph"
+version = "0.1.0"
+authors = ["m-lange <martin_lange_@gmx.net>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+plotters = {version = "0.2.12", default_features = false, features = ["line_series", "point_series", "histogram", "bitmap"]}
+minifb = "0.15.3"
+image = "0.23.2"
+
+[dev-dependencies]
+legion = { version = "0.2.1", default-features = false, features = ["events"] }
+rand = "0.5.5"
