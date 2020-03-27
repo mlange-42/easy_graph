@@ -137,7 +137,6 @@ fn infection_system(
                     }
                 }
             }
-
             for x in 0..grid.width() {
                 for y in 0..grid.height() {
                     let epi = grid.get_mut(x as usize, y as usize);
