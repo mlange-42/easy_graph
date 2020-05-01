@@ -46,36 +46,32 @@ fn main() {
 
     world.resources.insert(grid);
 
-    world.resources.insert(
-        WindowBuilder::new()
-            .with_dimensions(size, size)
-            .with_title("Map")
-            .with_scale(Scale::X2)
-            .with_position((50, 50))
-            .with_fps_skip(30.0)
-            .build(),
-    );
+    let win = WindowBuilder::new()
+        .with_dimensions(size, size)
+        .with_title("Map")
+        .with_scale(Scale::X2)
+        .with_position((50, 50))
+        .with_fps_skip(30.0)
+        .build();
 
-    world.resources.insert(
-        ChartBuilder::new()
-            .with_title("EpiStat")
-            .with_dimensions(600, 400)
-            .with_position(560, 50)
-            .with_data_limit(500)
-            .with_y_label("# Individuals x 1000")
-            .with_y_scale(0.001)
-            .with_ylim(Some(0.0), None)
-            .with_fps_skip(30.0)
-            .add_series(Series::line("S", &BLUE))
-            .add_series(Series::line("I", &RED))
-            .add_series(Series::line("R", &GREEN))
-            .build(),
-    );
+    let chart = ChartBuilder::new()
+        .with_title("EpiStat")
+        .with_dimensions(600, 400)
+        .with_position(560, 50)
+        .with_data_limit(500)
+        .with_y_label("# Individuals x 1000")
+        .with_y_scale(0.001)
+        .with_ylim(Some(0.0), None)
+        .with_fps_skip(30.0)
+        .add_series(Series::line("S", &BLUE))
+        .add_series(Series::line("I", &RED))
+        .add_series(Series::line("R", &GREEN))
+        .build();
 
     let mut schedule = Builder::default()
         .add_system(infection_system(0.02, 2, 5, 25))
-        .add_thread_local(chart_system(1))
-        .add_thread_local(draw_system(1))
+        .add_thread_local(chart_system(chart, 1))
+        .add_thread_local(draw_system(win, 1))
         .build();
 
     let now = Instant::now();
@@ -157,13 +153,13 @@ fn infection_system(
     sys
 }
 
-fn chart_system(step: u32) -> Box<dyn Runnable> {
+fn chart_system(mut chart: Chart, step: u32) -> Box<dyn Runnable> {
     let mut steps = 0;
     let sys = SystemBuilder::<()>::new("Chart")
         //.with_query(<Write<EpiStatComp>>::query())
-        .write_resource::<Chart>()
+        //.write_resource::<Chart>()
         .write_resource::<Grid<EpiStatComp>>()
-        .build_thread_local(move |_commands, _world, (chart, grid), _queries| {
+        .build_thread_local(move |_commands, _world, grid, _queries| {
             if chart.is_open() {
                 let grid: &mut Grid<EpiStatComp> = grid;
                 let (mut s, mut i, mut r) = (0, 0, 0);
@@ -184,13 +180,13 @@ fn chart_system(step: u32) -> Box<dyn Runnable> {
     sys
 }
 
-fn draw_system(step: u32) -> Box<dyn Runnable> {
+fn draw_system(mut win: BufferWindow, step: u32) -> Box<dyn Runnable> {
     let mut steps = 0;
     let sys = SystemBuilder::<()>::new("Drawer")
-        .write_resource::<BufferWindow>()
+        //.write_resource::<BufferWindow>()
         .write_resource::<Grid<EpiStatComp>>()
-        .build_thread_local(move |_commands, _world, (win, grid), _queries| {
-            let win: &mut BufferWindow = win;
+        .build_thread_local(move |_commands, _world, grid, _queries| {
+            //let win: &mut BufferWindow = win;
             if win.is_open() && (step == 0 || steps % step == 0) {
                 win.draw(|b: BitMapBackend<RGBPixel>| {
                     let root = b.into_drawing_area();
