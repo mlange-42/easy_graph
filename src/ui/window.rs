@@ -151,8 +151,6 @@ pub struct BufferWindow {
     dim: (usize, usize),
     fps_skip: UpdateSkip,
 }
-unsafe impl Send for BufferWindow {}
-unsafe impl Sync for BufferWindow {}
 
 impl BufferWindow {
     pub(crate) fn new(
